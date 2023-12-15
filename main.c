@@ -24,11 +24,19 @@ char* readFile(char* file_name) {
   }
   long size = ftell(f);
   char* source_code = (char *)malloc(size+1);
+  rewind(f);
 
   fread(source_code, 1, size, f);
   fclose(f);
 
   return source_code;
+}
+
+void traverse_node(TSNode node) {
+  printf("%s\n", ts_node_string(node));
+  for (uint32_t i = 0; i < ts_node_child_count(node); ++i) {
+	traverse_node(ts_node_child(node, i));
+  }
 }
 
 int tree(char* source_code, TSParser* parser) {
@@ -40,11 +48,8 @@ int tree(char* source_code, TSParser* parser) {
   );
 
   TSNode root_node = ts_tree_root_node(tree);
-  char *string = ts_node_string(root_node);
-  printf("%s\n", string);
+  traverse_node(root_node);
 
-  // Free all of the heap-allocated memory.
-  free(string);
   ts_tree_delete(tree);
   return 0;
 }
