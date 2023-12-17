@@ -1,11 +1,9 @@
 CC = gcc
-CFLAGS = -I ~/tree-sitter/lib/include -Werror -Wextra -pedantic
+CFLAGS =-I ~/tree-sitter/lib/include 
 LIBS = ~/tree-sitter/libtree-sitter.a
 TSX_PARSER = ~/tree-sitter-typescript/tsx/src/parser.c ~/tree-sitter-typescript/tsx/src/scanner.c
 
 
-tsx: tsx.c
-	$(CC) $(CGLAGS) tsx.c $(TSX_PARSER) $(LIBS) -o tsx
+main: parse.c main.c
+	$(CC) -Wall -Wextra -o main $(CGLAGS) parse.c main.c $(TSX_PARSER) $(LIBS) 
 
-main: main.c
-	$(CC) $(CGLAGS) main.c $(TSX_PARSER) $(LIBS) -o main
