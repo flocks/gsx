@@ -32,33 +32,49 @@ char* readFile(char* file_name) {
   return source_code;
 }
 
-void traverse_node(TSNode node, const char* file_name, char* source_code, Pattern* p) {
+char* find_node_name(TSNode node, char* source_code) {
+  size_t start_offset = ts_node_start_byte(node);
+  size_t end_offset = ts_node_end_byte(node);
+  size_t length = end_offset - start_offset;
+  char *name = (char *)malloc(length + 1);
+  memcpy(name, source_code + start_offset, length);
+  name[length] = '\0';
+
+  return name;
+}
+
+void traverse_node(TSNode node, char* source_code, Pattern* p) {
   const char *name = ts_node_type(node);
   if (strcmp(name, "jsx_self_closing_element") == 0 ||
 	  strcmp(name, "jsx_opening_element") == 0) {
 
+	// Component name is the second child, because first child is `<`
 	TSNode child = ts_node_child(node, 1);
 	if (!ts_node_is_null(child)) {
-	  size_t start_offset = ts_node_start_byte(child);
-	  size_t end_offset = ts_node_end_byte(child);
-	  size_t length = end_offset - start_offset;
-	  char *sub = (char *)malloc(length + 1);
-	  memcpy(sub, source_code + start_offset, length);
-	  sub[length] = '\0';
+	  char *name = find_node_name(child, source_code);
 
-	  if (strcmp(sub, p->component) == 0) {
-		printf("%s\n", sub);
+	  if (strcmp(name, p->component) == 0) {
+		TSNode sibling = ts_node_next_sibling(child);
+
+		while(!ts_node_is_null(sibling)) {
+		  if (strcmp(ts_node_type(sibling), "jsx_attribute") == 0) {
+			char *propName = find_node_name(sibling, source_code);
+			free(propName);
+		  }
+		  sibling = ts_node_next_sibling(sibling);
+		}
 	  }
-	  free(sub);
+	  free(name);
 	}
   }
 
   for (uint32_t i = 0; i < ts_node_child_count(node); ++i) {
-	traverse_node(ts_node_child(node, i), file_name, source_code, p);
+	traverse_node(ts_node_child(node, i), source_code, p);
   }
+
 }
 
-int tree(char* source_code, TSParser* parser, const char* file_name, Pattern *p) {
+int tree(char* source_code, TSParser* parser, Pattern *p) {
   TSTree *tree = ts_parser_parse_string(
     parser,
     NULL,
@@ -67,7 +83,7 @@ int tree(char* source_code, TSParser* parser, const char* file_name, Pattern *p)
   );
 
   TSNode root_node = ts_tree_root_node(tree);
-  traverse_node(root_node, file_name, source_code, p);
+  traverse_node(root_node, source_code, p);
 
   ts_tree_delete(tree);
   return 0;
@@ -118,7 +134,7 @@ int main(int argc, char** argv) {
   while (fgets(result, sizeof(result), cmd)) {
 	result[strlen(result)-1] = '\0';
     char* source_code = readFile(result);
-    tree(source_code, parser, result, &p);
+    tree(source_code, parser, &p);
     free(source_code);
   }
 
