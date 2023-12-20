@@ -12,13 +12,12 @@ void parse(Pattern *p, char* input) {
 
   if(input[size] == '.') size++;
 
-
   p->component = component;
 
   char * strToken = strtok(&input[size], "," );
   while (strToken != NULL && p->nb_props < MAX_PROPS) {
 	bool is_present = true;
-	if (strToken[0] == '!') {
+	if (strToken[0] == '^') {
 	  is_present = false;
 	  strToken++;
 	}

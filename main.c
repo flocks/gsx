@@ -44,6 +44,16 @@ char* find_node_name(TSNode node, char* source_code) {
   return name;
 }
 
+int check_prop(char* name, Pattern* p) {
+  for (size_t i = 0; i < p->nb_props; i++) {
+	if (strncmp(p->props[i].name, name, strlen(p->props[i].name)) == 0) {
+	  /* if (p->props[i].is_present == false) return 0; */
+	  return 1;
+	}
+  }
+  return 0;
+}
+
 void traverse_node(TSNode node, const char* file_name, char* source_code, Pattern* p) {
   const char *name = ts_node_type(node);
   if (strcmp(name, "jsx_self_closing_element") == 0 ||
@@ -57,20 +67,47 @@ void traverse_node(TSNode node, const char* file_name, char* source_code, Patter
 	  if (strcmp(name, p->component) == 0) {
 		TSPoint point = ts_node_start_point(node);
 		TSNode sibling = ts_node_next_sibling(child);
+		bool valid = true;
+		size_t count = 0;
+		for (size_t i = 0; i < p->nb_props; i++) {
+		  if (p->props[i].is_present) count++;
+		}
+		size_t count_match = 0;
 
 		while(!ts_node_is_null(sibling)) {
 		  if (strcmp(ts_node_type(sibling), "jsx_attribute") == 0) {
-			printf("%s:%d:%d %s\n", file_name, point.row + 1, point.column + 1, name);
+			if (p->nb_props == 0) {
+				printf("%s:%d:%d %s\n", file_name, point.row + 1, point.column + 1, name);
+				break;
+			}
 			char *propName = find_node_name(sibling, source_code);
+
+			for (size_t i = 0; i < p->nb_props; i++) {
+			  bool props_match = strncmp(p->props[i].name,propName,  strlen(p->props[i].name)) == 0;
+			  if (p->props[i].is_present == false && props_match) {
+				valid = false;
+				break;
+			  } else if (p->props[i].is_present && props_match) {
+				count_match++;
+			  }
+			}
+
 			free(propName);
 		  }
 		  sibling = ts_node_next_sibling(sibling);
+		}
+		if (count > 0 && count_match < count) {
+		  valid = false;
+		} 
+		if (valid) {
+		  printf("%s:%d:%d %s\n", file_name, point.row + 1, point.column + 1, name);
 		}
 	  }
 	  free(name);
 	}
   }
 
+  // TODO how to skip node that we already seen with the siblings discovery
   for (uint32_t i = 0; i < ts_node_child_count(node); ++i) {
 	traverse_node(ts_node_child(node, i), file_name, source_code, p);
   }
@@ -85,6 +122,7 @@ int tree(char* source_code, const char* file_name, TSParser* parser, Pattern *p)
   );
 
   TSNode root_node = ts_tree_root_node(tree);
+  /* print_pattern(p); */
   traverse_node(root_node, file_name, source_code, p);
 
   ts_tree_delete(tree);
@@ -119,7 +157,7 @@ int main(int argc, char** argv) {
 	fprintf(stderr, "Pattern is probably too big");
 	exit(EXIT_FAILURE);
   }
-  sprintf(command, "grep -lr --include \\*.tsx %s %s", p.component, directory);
+  sprintf(command, "rg -l %s %s", p.component, directory);
 
   TSParser *parser = ts_parser_new();
   ts_parser_set_language(parser, tree_sitter_tsx());
