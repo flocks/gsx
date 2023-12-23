@@ -5,5 +5,5 @@ TSX_PARSER = ~/tree-sitter-typescript/tsx/src/parser.c ~/tree-sitter-typescript/
 
 
 main: parse.c main.c
-	$(CC) -Wall -Wextra -o main $(CGLAGS) parse.c main.c $(TSX_PARSER) $(LIBS) 
+	$(CC) -Wall -g -Wextra -o main $(CGLAGS) parse.c main.c $(TSX_PARSER) $(LIBS) 
 
