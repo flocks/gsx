@@ -1,9 +1,23 @@
 CC = gcc
-CFLAGS =-I ~/tree-sitter/lib/include 
-LIBS = ~/tree-sitter/libtree-sitter.a
-TSX_PARSER = ~/tree-sitter-typescript/tsx/src/parser.c ~/tree-sitter-typescript/tsx/src/scanner.c
+TREE_SITTER=$(CURDIR)/tree-sitter
+TREE_SITTER_TSX=$(CURDIR)/tree-sitter-typescript/tsx
+STATIC_LIB = $(TREE_SITTER)/libtree-sitter.a
 
+default: main
 
-main: parse.c main.c
-	$(CC) -Wall -g -Wextra -o main $(CGLAGS) parse.c main.c $(TSX_PARSER) $(LIBS) 
+$(STATIC_LIB):
+	cd $(TREE_SITTER) && $(MAKE)
+
+scanner.o: $(TREE_SITTER_TSX)/src/scanner.c
+	$(CC) -c $< -o $@
+
+parser.o: $(TREE_SITTER_TSX)/src/parser.c
+	$(CC) -c $< -o $@
+
+main: src/parse.c src/main.c scanner.o parser.o $(STATIC_LIB)
+	$(CC) -Wall -g -Wextra -o main $(CGLAGS) src/parse.c src/main.c scanner.o parser.o $(STATIC_LIB) 
+
+.PHONY:clean
+clean:
+	rm -f *.o && rm -f main
 
