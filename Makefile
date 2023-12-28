@@ -15,7 +15,7 @@ parser.o: $(TREE_SITTER_TSX)/src/parser.c
 	$(CC) -c $< -o $@
 
 main: src/parse.c src/main.c scanner.o parser.o $(STATIC_LIB)
-	$(CC) -Wall -g -Wextra -o main $(CGLAGS) src/parse.c src/main.c scanner.o parser.o $(STATIC_LIB) 
+	$(CC) -Wall -Wextra -std=c11 -pedantic -o main $(CGLAGS) src/parse.c src/main.c scanner.o parser.o $(STATIC_LIB) 
 
 .PHONY:clean
 clean:

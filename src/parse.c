@@ -14,31 +14,35 @@ void parse(Pattern *p, char* input) {
 
   p->component = component;
 
-  char * strToken = strtok(&input[size], "," );
-  while (strToken != NULL && p->nb_props < MAX_PROPS) {
-	bool is_present = true;
+  char* strToken = strtok(&input[size], ",");
+  while (strToken != NULL) {
 	if (strToken[0] == '^') {
-	  is_present = false;
-	  strToken++;
+	  Props props = { .name = ++strToken };
+	  p->exclude_props.props[p->exclude_props.count++] = props;
 	}
-	Props props = {
-	  .name = strToken,
-	  .is_present = is_present
-	};
-	p->props[p->nb_props++] = props;
+	else {
+	  Props props = { .name = strToken };
+	  p->include_props.props[p->include_props.count++] = props;
+	}
 	strToken = strtok(NULL, ",");
   }
 }
 
 void print_props(const Props *p) {
   printf("Props name: %s\n", p->name);
-  printf("Props presence: %d\n", p->is_present);
 }
 
 void print_pattern(const Pattern* p) {
   printf("Component: %s\n", p->component);
-  for (size_t i = 0; i < p->nb_props; i++) {
-	print_props(&p->props[i]);
+  printf("Include: \n");
+  for (size_t i = 0; i < p->include_props.count; i++) {
+	print_props(&p->include_props.props[i]);
+	printf("\n");
+
+  }
+  printf("Exclude: \n");
+  for (size_t i = 0; i < p->exclude_props.count; i++) {
+	print_props(&p->exclude_props.props[i]);
 	printf("\n");
 
   }

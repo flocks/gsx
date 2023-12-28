@@ -8,15 +8,21 @@
 
 #define MAX_PROPS 10
 
+// wrap in a structure because I expect more field in the future
 typedef struct {
   char* name;
-  bool is_present;
 } Props;
 
 typedef struct {
-  char* component;
   Props props[MAX_PROPS];
-  size_t nb_props;
+  size_t count;
+} Props_Arr;
+
+
+typedef struct {
+  char* component;
+  Props_Arr include_props;
+  Props_Arr exclude_props;
 } Pattern;
 
 void parse(Pattern *p, char* input);

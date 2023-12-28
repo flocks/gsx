@@ -1,3 +1,4 @@
+#define _GNU_SOURCE // make popen available
 #include <linux/limits.h>
 #include <tree_sitter/api.h>
 #include <string.h>
@@ -7,7 +8,7 @@
 
 #include "parse.h"
 
-#define INIT_RESULT_CAPACITY 50
+#define INIT_RESULT_CAPACITY 32
 #define MAX_COMMAND_LINE_LENGTH 1024
 #define MAX_FILE_NAME 1024
 
@@ -125,7 +126,7 @@ void traverse_node(TSNode node, const char* file_name, char* source_code, Patter
   }
 }
 
-TSTree* tree(char* source_code, const char* file_name, TSParser* parser, Pattern *p, Result* r) {
+TSTree* build_tree(char* source_code, const char* file_name, TSParser* parser, Pattern *p, Result* r) {
   TSTree *tree = ts_parser_parse_string(
     parser,
     NULL,
@@ -186,7 +187,7 @@ int main(int argc, char** argv) {
     char* source_code = readFile(result);
     Result result_ast = { .items = NULL, .size = 0, .capacity = 0 };
 
-    TSTree* t = tree(source_code, result, parser, &p, &result_ast);
+    TSTree* tree = build_tree(source_code, result, parser, &p, &result_ast);
 
 	for (size_t i = 0; i < result_ast.size; i++) {
 	  printf("%s\n", find_node_name(result_ast.items[i] , source_code));
@@ -194,9 +195,10 @@ int main(int argc, char** argv) {
 
 	free_result(&result_ast);
     free(source_code);
-	ts_tree_delete(t);
+	ts_tree_delete(tree);
   }
 
+  print_pattern(&p);
   free_pattern(&p);
   ts_parser_delete(parser);
   pclose(cmd);
