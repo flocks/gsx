@@ -79,32 +79,35 @@ char* find_node_name(TSNode node, char* source_code) {
   return name;
 }
 
-/* bool check_node(TSNode node, char* source_code, Pattern* p) { */
-/*   /\* TSPoint point = ts_node_start_point(node); *\/ */
-/*   /\* TSNode sibling = ts_node_next_sibling(child); *\/ */
-/*   /\* bool valid = true; *\/ */
-/*   /\* size_t count = 0; *\/ */
-/*   /\* for (size_t i = 0; i < p->nb_props; i++) { *\/ */
-/*   /\* 	if (p->props[i].is_present) count++; *\/ */
-/*   /\* } *\/ */
-/*   /\* size_t count_match = 0; *\/ */
+bool inspect_node(TSNode node, char* source_code, Pattern* p) {
+  if (p->include_props.count == 0 && p->exclude_props.count == 0) {
+	return true;
+  }
 
-/*   /\* while(!ts_node_is_null(sibling)) { *\/ */
-/*   /\* 	if (strcmp(ts_node_type(sibling), "jsx_attribute") == 0) { *\/ */
-/*   /\* 	  if (p->nb_props == 0) { *\/ */
-/*   /\* 		printf("%s:%d:%d %s\n", file_name, point.row + 1, point.column + 1, name); *\/ */
-/*   /\* 		break; *\/ */
-/*   /\* 	  } *\/ */
-/*   /\* 	  char *propName = find_node_name(sibling, source_code); *\/ */
+  TSNode sibling = ts_node_next_sibling(node);
+  size_t count = 0;
+  while(!ts_node_is_null(sibling)) {
+	if (strcmp(ts_node_type(sibling), "jsx_attribute") == 0)  {
+	  TSNode prop = ts_node_child(sibling, 0);
+	  char *name = find_node_name(prop, source_code);
 
-/*   /\* 	  break; *\/ */
-/*   /\* 	} else if (p->props[i].is_present && props_match) { *\/ */
-/*   /\* 	  count_match++; *\/ */
-/*   /\* 	} *\/ */
-/*   /\* } *\/ */
+	  for (size_t i = 0; i < p->exclude_props.count; i++) {
+		if (strcmp(name, p->exclude_props.props[i].name) == 0)
+		  return false;
+	  }
+	  for (size_t i = 0; i < p->include_props.count; i++) {
+		if (strcmp(name, p->include_props.props[i].name) == 0)
+		  count++;
+	  }
 
-/*   return true; */
-/* } */
+	  free(name);
+	}
+	sibling = ts_node_next_sibling(sibling);
+  }
+
+  return p->include_props.count > 0 &&
+	p->include_props.count == count;
+}
 
 void traverse_node(TSNode node, const char* file_name, char* source_code, Pattern* p, Result *r) {
   const char *type = ts_node_type(node);
@@ -138,6 +141,15 @@ TSTree* build_tree(char* source_code, const char* file_name, TSParser* parser, P
   traverse_node(root_node, file_name, source_code, p, r);
 
   return tree;
+}
+
+void print_line(TSNode node, char* source_code, char* file_name) {
+  TSPoint point = ts_node_start_point(node);
+  printf("%s:%d:%d: %s\n",
+		 file_name,
+		 point.row + 1,
+		 point.column + 1,
+		 find_node_name(node, source_code));
 }
 
 int main(int argc, char** argv) {
@@ -190,7 +202,9 @@ int main(int argc, char** argv) {
     TSTree* tree = build_tree(source_code, result, parser, &p, &result_ast);
 
 	for (size_t i = 0; i < result_ast.size; i++) {
-	  printf("%s\n", find_node_name(result_ast.items[i] , source_code));
+	  if(inspect_node(result_ast.items[i], source_code, &p)) {
+		print_line(result_ast.items[i], source_code, result);
+	  }
 	}
 
 	free_result(&result_ast);
