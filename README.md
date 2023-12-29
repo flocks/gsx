@@ -28,6 +28,7 @@ The project embeds as git submodules
 ## Install
 
 ```console
+git clone --recursive https://github.com/flocks/gsx
 make
 sudo make install
 ```
