@@ -21,7 +21,7 @@ typedef struct {
 } Result;
 
 
-void append_result(Result* r, TSNode item) {
+void append_node(Result* r, TSNode item) {
   if (r->size >= r->capacity) {
 	size_t new_capacity = r->capacity * 2;
 	if (new_capacity == 0) {
@@ -79,7 +79,7 @@ char* find_node_name(TSNode node, char* source_code) {
   return name;
 }
 
-bool inspect_node(TSNode node, char* source_code, Pattern* p) {
+bool filter_node(TSNode node, char* source_code, Pattern* p) {
   if (p->include_props.count == 0 && p->exclude_props.count == 0) {
 	return true;
   }
@@ -118,7 +118,7 @@ void traverse_node(TSNode node, const char* file_name, char* source_code, Patter
 	TSNode child = ts_node_child(node, 1);
 	if (!ts_node_is_null(child)) {
 	  char *name = find_node_name(child, source_code);
-	  if (strcmp(name, p->component) == 0) append_result(r, child);
+	  if (strcmp(name, p->component) == 0) append_node(r, child);
 	  free(name);
 	}
   }
@@ -202,7 +202,7 @@ int main(int argc, char** argv) {
     TSTree* tree = build_tree(source_code, result, parser, &p, &result_ast);
 
 	for (size_t i = 0; i < result_ast.size; i++) {
-	  if(inspect_node(result_ast.items[i], source_code, &p)) {
+	  if(filter_node(result_ast.items[i], source_code, &p)) {
 		print_line(result_ast.items[i], source_code, result);
 	  }
 	}
@@ -212,7 +212,6 @@ int main(int argc, char** argv) {
 	ts_tree_delete(tree);
   }
 
-  print_pattern(&p);
   free_pattern(&p);
   ts_parser_delete(parser);
   pclose(cmd);
