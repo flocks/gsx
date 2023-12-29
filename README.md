@@ -5,7 +5,7 @@
 GSX uses tree-sitter API so you can grep for some JSX elements accross
 your project.
 
-** API
+## API
 
 ```console
 $ gsx 'Button' // search all <Button> in your codebase
