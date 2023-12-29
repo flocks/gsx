@@ -3,7 +3,7 @@ TREE_SITTER=$(CURDIR)/tree-sitter
 TREE_SITTER_TSX=$(CURDIR)/tree-sitter-typescript/tsx
 STATIC_LIB = $(TREE_SITTER)/libtree-sitter.a
 
-default: main
+default: gsx
 
 $(STATIC_LIB):
 	cd $(TREE_SITTER) && $(MAKE)
@@ -14,10 +14,20 @@ scanner.o: $(TREE_SITTER_TSX)/src/scanner.c
 parser.o: $(TREE_SITTER_TSX)/src/parser.c
 	$(CC) -c $< -o $@
 
-main: src/parse.h src/parse.c src/main.c scanner.o parser.o $(STATIC_LIB)
-	$(CC) -Wall -Wextra -std=c11 -pedantic -o main $(CGLAGS) src/parse.c src/main.c scanner.o parser.o $(STATIC_LIB) 
+gsx: src/parse.h src/parse.c src/main.c scanner.o parser.o $(STATIC_LIB)
+	$(CC) -Wall -Wextra -std=c11 -pedantic -o gsx $(CGLAGS) src/parse.c src/main.c scanner.o parser.o $(STATIC_LIB) 
 
-.PHONY:clean
 clean:
 	rm -f *.o && rm -f main
 
+install:
+	@echo "Installing GSX..."
+	install -D -m 755 gsx $(DESTDIR)$(PREFIX)/bin/gsx
+	@echo "GSX installed to $(DESTDIR)$(PREFIX)/bin"
+
+uninstall:
+	@echo "Uninstalling GSX..."
+	rm $(DESTDIR)$(PREFIX)/bin/gsx
+	@echo "GSX has been removed from $(DESTDIR)$(PREFIX)/bin"
+
+.PHONY: install clean uninstall

@@ -29,4 +29,5 @@ The project embeds as git submodules
 
 ```console
 make
+sudo make install
 ```
