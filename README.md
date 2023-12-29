@@ -1,6 +1,6 @@
-* GSX
+# GSX
 
-** JSX-semantic grep
+## JSX-semantic grep
 
 GSX uses tree-sitter API so you can grep for some JSX elements accross
 your project.
@@ -14,7 +14,7 @@ $ gsx 'Button.variant,size' // search all <Button> that have variant AND size pr
 $ gsx 'Button.variant,^size // search all <Button> that have variant AND not size props
 ```
 
-** Dependencies
+## Dependencies
 
 GSX uses [ripgrep](https://github.com/BurntSushi/ripgrep) for an
 initial filtering stage. This reduces the number of files requiring
@@ -25,7 +25,7 @@ The project embeds as git submodules
 - [tree-sitter-typescript grammar](https://github.com/tree-sitter/tree-sitter-typescript)
 
 
-** Install
+## Install
 
 ```console
 make
