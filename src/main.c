@@ -123,7 +123,6 @@ void traverse_node(TSNode node, const char* file_name, char* source_code, Patter
 	}
   }
 
-  // TODO how to skip node that we already seen with the siblings discovery
   for (uint32_t i = 0; i < ts_node_child_count(node); ++i) {
 	traverse_node(ts_node_child(node, i), file_name, source_code, p, r);
   }
