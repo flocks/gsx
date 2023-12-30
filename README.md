@@ -11,7 +11,7 @@ your project.
 $ gsx 'Button' // search all <Button> in your codebase
 $ gsx 'Button.variant' // search all <Button> that have variant props
 $ gsx 'Button.variant,size' // search all <Button> that have variant AND size props
-$ gsx 'Button.variant,^size // search all <Button> that have variant AND not size props
+$ gsx 'Button.variant,^size' // search all <Button> that have variant AND not size props
 ```
 
 ## Dependencies
