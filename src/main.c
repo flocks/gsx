@@ -129,12 +129,7 @@ void traverse_node(TSNode node, const char* file_name, char* source_code, Patter
 }
 
 TSTree* build_tree(char* source_code, const char* file_name, TSParser* parser, Pattern *p, Result* r) {
-  TSTree *tree = ts_parser_parse_string(
-    parser,
-    NULL,
-    source_code,
-    strlen(source_code)
-  );
+  TSTree *tree = ts_parser_parse_string(parser, NULL, source_code, strlen(source_code));
 
   TSNode root_node = ts_tree_root_node(tree);
   traverse_node(root_node, file_name, source_code, p, r);
@@ -198,7 +193,7 @@ int main(int argc, char** argv) {
 	char* source_code = readFile(file_path);
 	Result result_ast = { .items = NULL, .size = 0, .capacity = 0 };
 
-    TSTree* tree = build_tree(source_code, file_path, parser, &p, &result_ast);
+	TSTree* tree = build_tree(source_code, file_path, parser, &p, &result_ast);
 
 	for (size_t i = 0; i < result_ast.size; i++) {
 	  if(filter_node(result_ast.items[i], source_code, &p)) {
@@ -207,7 +202,7 @@ int main(int argc, char** argv) {
 	}
 
 	free_result(&result_ast);
-    free(source_code);
+	free(source_code);
 	ts_tree_delete(tree);
   }
 
