@@ -185,7 +185,7 @@ int main(int argc, char** argv) {
   ts_parser_set_language(parser, tree_sitter_tsx());
 
   FILE *cmd;
-  char result[MAX_FILE_NAME];
+  char file_path[MAX_FILE_NAME];
 
   cmd = popen(command, "r");
   if (cmd == NULL) {
@@ -193,16 +193,16 @@ int main(int argc, char** argv) {
     exit(EXIT_FAILURE);
   }
 
-  while (fgets(result, sizeof(result), cmd)) {
-	result[strlen(result)-1] = '\0';
-    char* source_code = readFile(result);
-    Result result_ast = { .items = NULL, .size = 0, .capacity = 0 };
+  while (fgets(file_path, sizeof(file_path), cmd)) {
+	file_path[strlen(file_path)-1] = '\0';
+	char* source_code = readFile(file_path);
+	Result result_ast = { .items = NULL, .size = 0, .capacity = 0 };
 
-    TSTree* tree = build_tree(source_code, result, parser, &p, &result_ast);
+    TSTree* tree = build_tree(source_code, file_path, parser, &p, &result_ast);
 
 	for (size_t i = 0; i < result_ast.size; i++) {
 	  if(filter_node(result_ast.items[i], source_code, &p)) {
-		print_line(result_ast.items[i], source_code, result);
+		print_line(result_ast.items[i], source_code, file_path);
 	  }
 	}
 
