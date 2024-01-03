@@ -1,4 +1,5 @@
 #define _GNU_SOURCE // make popen available
+#include <ctype.h>
 #include <linux/limits.h>
 #include <tree_sitter/api.h>
 #include <string.h>
@@ -142,11 +143,21 @@ TSTree* build_tree(char* source_code, const char* file_name, TSParser* parser, P
 
 void print_result(TSNode node, char* source_code, char* file_name) {
   TSPoint point = ts_node_start_point(node);
-  printf("%s:%d:%d\n", file_name, point.row + 1, point.column + 1);
   TSNode parent = ts_node_parent(node);
   if(!ts_node_is_null(parent)) {
 	char* parent_name = get_node_content(parent, source_code);
-	printf("%s\n", parent_name);
+	char *ptr = strtok(parent_name, "\n");
+	int i = 0;
+	while(ptr != NULL) {
+	  if (i == 0) {
+		printf("%s:%d:%s\n", file_name, i + point.row + 1, ptr);
+	  } else {
+		printf("%s-%d-%s\n", file_name, i + point.row + 1, ptr);
+	  }
+	  ptr = strtok(NULL, "\n");
+	  i++;
+	}
+	printf("--\n");
 	free(parent_name);
   }
 }
