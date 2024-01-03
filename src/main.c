@@ -105,8 +105,11 @@ bool filter_node(TSNode node, char* source_code, Pattern* p) {
 	sibling = ts_node_next_sibling(sibling);
   }
 
-  return p->include_props.count > 0 &&
-	p->include_props.count == count;
+  if (p->include_props.count > 0) {
+	return p->include_props.count == count;
+  }
+  return true;
+
 }
 
 void traverse_node(TSNode node, const char* file_name, char* source_code, Pattern* p, Result *r) {
