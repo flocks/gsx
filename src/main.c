@@ -63,7 +63,7 @@ char* readFile(char* file_name) {
   return source_code;
 }
 
-char* find_node_name(TSNode node, char* source_code) {
+char* get_node_content(TSNode node, char* source_code) {
   uint32_t start_offset = ts_node_start_byte(node);
   uint32_t end_offset = ts_node_end_byte(node);
   uint32_t length = end_offset - start_offset;
@@ -89,7 +89,7 @@ bool filter_node(TSNode node, char* source_code, Pattern* p) {
   while(!ts_node_is_null(sibling)) {
 	if (strcmp(ts_node_type(sibling), "jsx_attribute") == 0)  {
 	  TSNode prop = ts_node_child(sibling, 0);
-	  char *name = find_node_name(prop, source_code);
+	  char *name = get_node_content(prop, source_code);
 
 	  for (size_t i = 0; i < p->exclude_props.count; i++) {
 		if (strcmp(name, p->exclude_props.props[i].name) == 0)
@@ -117,7 +117,7 @@ void traverse_node(TSNode node, const char* file_name, char* source_code, Patter
 	// Component name is the second child, because first child is `<`
 	TSNode child = ts_node_child(node, 1);
 	if (!ts_node_is_null(child)) {
-	  char *name = find_node_name(child, source_code);
+	  char *name = get_node_content(child, source_code);
 	  if (strcmp(name, p->component) == 0) append_node(r, child);
 	  free(name);
 	}
@@ -137,13 +137,15 @@ TSTree* build_tree(char* source_code, const char* file_name, TSParser* parser, P
   return tree;
 }
 
-void print_line(TSNode node, char* source_code, char* file_name) {
+void print_result(TSNode node, char* source_code, char* file_name) {
   TSPoint point = ts_node_start_point(node);
-  printf("%s:%d:%d: %s\n",
-		 file_name,
-		 point.row + 1,
-		 point.column + 1,
-		 find_node_name(node, source_code));
+  printf("%s:%d:%d\n", file_name, point.row + 1, point.column + 1);
+  TSNode parent = ts_node_parent(node);
+  if(!ts_node_is_null(parent)) {
+	char* parent_name = get_node_content(parent, source_code);
+	printf("%s\n", parent_name);
+	free(parent_name);
+  }
 }
 
 int main(int argc, char** argv) {
@@ -197,7 +199,7 @@ int main(int argc, char** argv) {
 
 	for (size_t i = 0; i < result_ast.size; i++) {
 	  if(filter_node(result_ast.items[i], source_code, &p)) {
-		print_line(result_ast.items[i], source_code, file_path);
+		print_result(result_ast.items[i], source_code, file_path);
 	  }
 	}
 
