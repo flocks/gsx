@@ -169,7 +169,7 @@ int main(int argc, char** argv) {
   char command[MAX_COMMAND_LINE_LENGTH];
 
   if (argc < 2) {
-	fprintf(stderr, "USAGE: tsjsx src Button.variant\n");
+	fprintf(stderr, "USAGE: gsx src Button.variant\n");
 	exit(EXIT_FAILURE);
   }
 
