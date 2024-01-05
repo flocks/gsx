@@ -163,7 +163,6 @@ void print_result(TSNode node, char* source_code, char* file_name) {
 }
 
 int main(int argc, char** argv) {
-
   const char *directory = NULL;
   Pattern p = {0};
   char command[MAX_COMMAND_LINE_LENGTH];
@@ -184,6 +183,13 @@ int main(int argc, char** argv) {
 
   if (directory == NULL) {
 	directory = "";
+  }
+
+  // TODO write a a better param parsing system
+  // especially when we will handle output params options
+  if (!isalpha(p.component[0])) {
+	fprintf(stderr, "USAGE: gsx src Button.variant\n");
+	exit(EXIT_FAILURE);
   }
 
   if (strlen(directory) + strlen(p.component) > 1000) {
