@@ -1,0 +1,2 @@
+test/samples/file.tsx:8:<Button size="large">
+--
