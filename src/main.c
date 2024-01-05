@@ -55,10 +55,11 @@ char* readFile(char* file_name) {
     exit(EXIT_FAILURE);
   }
   long size = ftell(f);
-  char* source_code = (char *)malloc(size+1);
+  char* source_code = (char *)malloc((size+1) * sizeof(char));
   rewind(f);
 
   fread(source_code, 1, size, f);
+  source_code[size] = '\0';
   fclose(f);
 
   return source_code;
@@ -69,7 +70,7 @@ char* get_node_content(TSNode node, char* source_code) {
   uint32_t end_offset = ts_node_end_byte(node);
   uint32_t length = end_offset - start_offset;
 
-  char *name = (char *)malloc(length + 1);
+  char *name = (char *)malloc((length + 1) * sizeof(char));
   if (name == NULL) {
 	fprintf(stderr, "Error allocating for name");
 	exit(EXIT_FAILURE);
