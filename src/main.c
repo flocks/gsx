@@ -8,6 +8,7 @@
 #include <errno.h>
 
 #include "parse.h"
+#include "utils.h"
 
 #define INIT_RESULT_CAPACITY 32
 #define MAX_COMMAND_LINE_LENGTH 1024
@@ -41,29 +42,6 @@ void free_result(Result *r) {
   r->size = r->capacity = 0;
 }
 
-char* readFile(char* file_name) {
-  FILE *f = fopen(file_name, "rb");
-
-  if (f == NULL) {
-    fprintf(stderr, "Couldn't open %s", file_name);
-    fprintf(stderr, "%d", errno);
-
-    exit(EXIT_FAILURE);
-  }
-  if(fseek(f, 0, SEEK_END) != 0) {
-    fprintf(stderr, "Error reading %s", file_name);
-    exit(EXIT_FAILURE);
-  }
-  long size = ftell(f);
-  char* source_code = (char *)malloc((size+1) * sizeof(char));
-  rewind(f);
-
-  fread(source_code, 1, size, f);
-  source_code[size] = '\0';
-  fclose(f);
-
-  return source_code;
-}
 
 char* get_node_content(TSNode node, char* source_code) {
   uint32_t start_offset = ts_node_start_byte(node);
@@ -213,7 +191,7 @@ int main(int argc, char** argv) {
 
   while (fgets(file_path, sizeof(file_path), cmd)) {
 	file_path[strlen(file_path)-1] = '\0';
-	char* source_code = readFile(file_path);
+	char* source_code = read_file(file_path);
 	Result result_ast = { .items = NULL, .size = 0, .capacity = 0 };
 
 	TSTree* tree = build_tree(source_code, file_path, parser, &p, &result_ast);
