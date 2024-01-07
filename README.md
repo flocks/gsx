@@ -5,7 +5,7 @@
 GSX uses tree-sitter API so you can grep for some JSX elements accross
 your project.
 
-![build status](https://github.com/flocks/gsx/workflows/test.yml/badge.svg)
+[![Build status](https://github.com/flocks/gsx/actions/workflows/test.yml/badge.svg)](https://github.com/flocks/gsx/actions)
 
 ## API
 
