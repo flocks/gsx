@@ -42,22 +42,22 @@ Test tests[] = {
   (Test) {
 	.name = "Button",
 	.command = "./gsx test/samples/ Button",
-	.file = "./test/simple.txt",
+	.file = "./test/expected/simple.txt",
   },
   (Test) {
 	.name = "Button.^variant",
 	.command = "./gsx test/samples/ Button.^variant",
-	.file = "./test/exclude_one_prop.txt",
+	.file = "./test/expected/exclude_one_prop.txt",
   },
   (Test) {
 	.name = "Button.variant",
 	.command = "./gsx test/samples/ Button.variant",
-	.file = "./test/one_prop.txt",
+	.file = "./test/expected/one_prop.txt",
   },
   (Test) {
 	.name = "Button.variant,^size",
 	.command = "./gsx test/samples/ Button.variant,^size",
-	.file = "./test/include_one_exclude_one.txt",
+	.file = "./test/expected/include_one_exclude_one.txt",
   },
 };
 
