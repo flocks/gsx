@@ -59,8 +59,8 @@ char* get_node_content(TSNode node, char* source_code) {
   return name;
 }
 
-bool filter_node(TSNode node, char* source_code, Pattern* p) {
-  if (p->include_props.count == 0 && p->exclude_props.count == 0) {
+bool filter_node(TSNode node, char* source_code, Pattern* pattern) {
+  if (pattern->include_props.count == 0 && pattern->exclude_props.count == 0) {
 	return true;
   }
 
@@ -71,12 +71,12 @@ bool filter_node(TSNode node, char* source_code, Pattern* p) {
 	  TSNode prop = ts_node_child(sibling, 0);
 	  char *name = get_node_content(prop, source_code);
 
-	  for (size_t i = 0; i < p->exclude_props.count; i++) {
-		if (strcmp(name, p->exclude_props.props[i].name) == 0)
+	  for (size_t i = 0; i < pattern->exclude_props.count; i++) {
+		if (strcmp(name, pattern->exclude_props.props[i].name) == 0)
 		  return false;
 	  }
-	  for (size_t i = 0; i < p->include_props.count; i++) {
-		if (strcmp(name, p->include_props.props[i].name) == 0)
+	  for (size_t i = 0; i < pattern->include_props.count; i++) {
+		if (strcmp(name, pattern->include_props.props[i].name) == 0)
 		  count++;
 	  }
 
@@ -85,14 +85,14 @@ bool filter_node(TSNode node, char* source_code, Pattern* p) {
 	sibling = ts_node_next_sibling(sibling);
   }
 
-  if (p->include_props.count > 0) {
-	return p->include_props.count == count;
+  if (pattern->include_props.count > 0) {
+	return pattern->include_props.count == count;
   }
   return true;
 
 }
 
-void traverse_node(TSNode node, const char* file_name, char* source_code, Pattern* p, Result *r) {
+void traverse_node(TSNode node, const char* file_name, char* source_code, Pattern* pattern, Result *r) {
   const char *type = ts_node_type(node);
   if (strcmp(type, "jsx_self_closing_element") == 0 ||
 	  strcmp(type, "jsx_opening_element") == 0) {
@@ -101,21 +101,21 @@ void traverse_node(TSNode node, const char* file_name, char* source_code, Patter
 	TSNode child = ts_node_child(node, 1);
 	if (!ts_node_is_null(child)) {
 	  char *name = get_node_content(child, source_code);
-	  if (strcmp(name, p->component) == 0) append_node(r, child);
+	  if (strcmp(name, pattern->component) == 0) append_node(r, child);
 	  free(name);
 	}
   }
 
   for (uint32_t i = 0; i < ts_node_child_count(node); ++i) {
-	traverse_node(ts_node_child(node, i), file_name, source_code, p, r);
+	traverse_node(ts_node_child(node, i), file_name, source_code, pattern, r);
   }
 }
 
-TSTree* build_tree(char* source_code, const char* file_name, TSParser* parser, Pattern *p, Result* r) {
+TSTree* build_tree(char* source_code, const char* file_name, TSParser* parser, Pattern *pattern, Result* r) {
   TSTree *tree = ts_parser_parse_string(parser, NULL, source_code, strlen(source_code));
 
   TSNode root_node = ts_tree_root_node(tree);
-  traverse_node(root_node, file_name, source_code, p, r);
+  traverse_node(root_node, file_name, source_code, pattern, r);
 
   return tree;
 }
@@ -143,7 +143,7 @@ void print_result(TSNode node, char* source_code, char* file_name) {
 
 int main(int argc, char** argv) {
   const char *directory = NULL;
-  Pattern p = {0};
+  Pattern pattern = {0};
   char command[MAX_COMMAND_LINE_LENGTH];
 
   if (argc < 2) {
@@ -152,12 +152,12 @@ int main(int argc, char** argv) {
   }
 
   if (argc == 2) {
-	parse(&p, argv[1]);
+	parse(&pattern, argv[1]);
   }
 
   if (argc >= 3) {
 	directory = argv[1];
-	parse(&p, argv[2]);
+	parse(&pattern, argv[2]);
   }
 
   if (directory == NULL) {
@@ -166,16 +166,16 @@ int main(int argc, char** argv) {
 
   // TODO write a a better param parsing system
   // especially when we will handle output params options
-  if (!isalpha(p.component[0])) {
-	fprintf(stderr, "USAGE: gsx src Button.variant\n");
-	exit(EXIT_FAILURE);
+  if (!isalpha(pattern.component[0])) {
+    fprintf(stderr, "USAGE: gsx src Button.variant\n");
+    exit(EXIT_FAILURE);
   }
 
-  if (strlen(directory) + strlen(p.component) > 1000) {
+  if (strlen(directory) + strlen(pattern.component) > 1000) {
 	fprintf(stderr, "Pattern is probably too big");
 	exit(EXIT_FAILURE);
   }
-  sprintf(command, "rg -l %s %s", p.component, directory);
+  sprintf(command, "rg -l %s %s", pattern.component, directory);
 
   TSParser *parser = ts_parser_new();
   ts_parser_set_language(parser, tree_sitter_tsx());
@@ -193,11 +193,10 @@ int main(int argc, char** argv) {
 	file_path[strlen(file_path)-1] = '\0';
 	char* source_code = read_file(file_path);
 	Result result_ast = { .items = NULL, .size = 0, .capacity = 0 };
-
-	TSTree* tree = build_tree(source_code, file_path, parser, &p, &result_ast);
+	TSTree* tree = build_tree(source_code, file_path, parser, &pattern, &result_ast);
 
 	for (size_t i = 0; i < result_ast.size; i++) {
-	  if(filter_node(result_ast.items[i], source_code, &p)) {
+	  if(filter_node(result_ast.items[i], source_code, &pattern)) {
 		print_result(result_ast.items[i], source_code, file_path);
 	  }
 	}
@@ -207,7 +206,7 @@ int main(int argc, char** argv) {
 	ts_tree_delete(tree);
   }
 
-  free_pattern(&p);
+  free_pattern(&pattern);
   ts_parser_delete(parser);
   pclose(cmd);
 

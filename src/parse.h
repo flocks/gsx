@@ -25,7 +25,7 @@ typedef struct {
   Props_Arr exclude_props;
 } Pattern;
 
-void parse(Pattern *p, char* input);
+void parse(Pattern *pattern, char* input);
 void print_pattern(const Pattern* p);
 void print_props(const Props* p);
 void free_pattern(Pattern* p);
