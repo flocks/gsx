@@ -1,6 +1,6 @@
-test/samples/file.tsx:5:<Button variant="primary" size="large">
+test/samples/file.tsx:5:0:<Button variant="primary" size="large">
 --
-test/samples/file.tsx:8:<Button size="large">
+test/samples/file.tsx:8:0:<Button size="large">
 --
-test/samples/file.tsx:9:<Button variant="secondary">
+test/samples/file.tsx:9:0:<Button variant="secondary">
 --

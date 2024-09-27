@@ -129,7 +129,7 @@ void print_result(TSNode node, char* source_code, char* file_name) {
 	int i = 0;
 	while(ptr != NULL) {
 	  if (i == 0) {
-		printf("%s:%d:%s\n", file_name, i + point.row + 1, ptr);
+		printf("%s:%d:0:%s\n", file_name, i + point.row + 1, ptr);
 	  } else {
 		printf("%s-%d-%s\n", file_name, i + point.row + 1, ptr);
 	  }

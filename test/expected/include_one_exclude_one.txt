@@ -1,2 +1,2 @@
-test/samples/file.tsx:9:<Button variant="secondary">
+test/samples/file.tsx:9:0:<Button variant="secondary">
 --
